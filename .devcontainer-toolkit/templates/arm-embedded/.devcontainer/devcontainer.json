@@ -1,0 +1,37 @@
+{
+  "name": "ARM Cortex-M Dev",
+  "image": "openedge/arm-cortex-m:latest",
+
+  "remoteEnv": {
+    "ARM_GCC_DIR": "/opt/arm-gcc-toolchain",
+    "PATH": "/opt/arm-gcc-toolchain/bin:${containerEnv:PATH}"
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.cpptools",
+        "ms-vscode.cmake-tools",
+        "twxs.cmake",
+        "marus25.cortex-debug",
+        "ms-python.python"
+      ],
+      "settings": {
+        "C_Cpp.default.intelliSenseMode": "linux-gcc-arm",
+        "cmake.configureOnOpen": false
+      }
+    }
+  },
+
+  "mounts": [
+    "source=${localEnv:USERPROFILE}/.ssh,target=/home/vscode/.ssh,type=bind,readonly"
+  ],
+
+  "runArgs": [
+    "--privileged"
+  ],
+
+  "workspaceFolder": "/workspace",
+
+  "postCreateCommand": "arm-none-eabi-gcc --version && cmake --version && echo '✅ ARM GCC 就绪'"
+}

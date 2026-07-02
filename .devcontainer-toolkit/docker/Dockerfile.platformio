@@ -1,0 +1,35 @@
+# ============================================
+# PlatformIO 镜像 — WisBlock / Meshtastic / MeshCore
+# 构建: docker build -f Dockerfile.platformio -t openedge/platformio:latest .
+# ============================================
+FROM openedge/base-embedded:latest
+
+USER root
+
+# ---- PlatformIO CLI ----
+RUN python -m pip install --no-cache-dir platformio \
+    && platformio update
+
+# ---- udev 规则 (USB 烧录) ----
+RUN echo 'SUBSYSTEM=="usb", ATTR{idVendor}=="0403", MODE="0666"' >> /etc/udev/rules.d/99-platformio.rules \
+    && echo 'SUBSYSTEM=="usb", ATTR{idVendor}=="10c4", MODE="0666"' >> /etc/udev/rules.d/99-platformio.rules \
+    && echo 'SUBSYSTEM=="usb", ATTR{idVendor}=="1a86", MODE="0666"' >> /etc/udev/rules.d/99-platformio.rules \
+    && echo 'SUBSYSTEM=="usb", ATTTR{idVendor}=="303a", MODE="0666"' >> /etc/udev/rules.d/99-platformio.rules \
+    && echo 'SUBSYSTEM=="tty", MODE="0666"' >> /etc/udev/rules.d/99-platformio.rules
+
+# ---- PlatformIO 缓存目录 (避免每次重建下载) ----
+RUN mkdir -p /home/vscode/.platformio \
+    && chown -R vscode:vscode /home/vscode/.platformio
+
+# ---- 预装常用 Platform (节省首次编译时间) ----
+USER vscode
+RUN platformio platform install espressif32 || true \
+    && platformio platform install nordicnrf52 || true \
+    && platformio platform install raspberrypi || true
+
+USER root
+VOLUME /home/vscode/.platformio
+USER vscode
+
+WORKDIR /workspace
+CMD ["/bin/bash"]

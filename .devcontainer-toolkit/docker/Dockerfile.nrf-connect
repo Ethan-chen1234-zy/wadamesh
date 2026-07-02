@@ -1,0 +1,48 @@
+# ============================================
+# nRF Connect SDK 镜像 — Nordic nRF52/nRF53/nRF54 系列
+# 构建: docker build -f Dockerfile.nrf-connect -t openedge/nrf-connect:latest .
+# ============================================
+FROM openedge/base-embedded:latest
+
+USER root
+
+ENV NRF_UTIL_DIR=/opt/nrf-util
+ENV ZEPHYR_SDK_DIR=/opt/zephyr-sdk
+ENV PATH="${NRF_UTIL_DIR}/bin:${ZEPHYR_SDK_DIR}/bin:${PATH}"
+
+# ---- 系统依赖 (Zephyr 编译所需) ----
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ccache \
+    dfu-util \
+    gperf \
+    libsdl2-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# ---- nRF Command Line Tools (nrfutil) ----
+RUN curl -L "https://developer.nordicsemi.com/.pc-tools/nrfutil/x86_64-linux/nrfutil" \
+       -o /usr/local/bin/nrfutil \
+    && chmod +x /usr/local/bin/nrfutil \
+    && nrfutil install device || true
+
+# ---- Zephyr 依赖 (cmake 模板) ----
+RUN python -m pip install --no-cache-dir \
+    west \
+    pyyaml \
+    pyelftools \
+    intelhex \
+    pyserial \
+    nrfutil || true
+
+# ---- west init (SDK 本身建议通过 volume 挂载或 postCreate 拉取) ----
+RUN mkdir -p /opt/nordic
+
+# ---- GDB / 调试 ----
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gdb-multiarch \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+USER vscode
+WORKDIR /workspace
+CMD ["/bin/bash"]

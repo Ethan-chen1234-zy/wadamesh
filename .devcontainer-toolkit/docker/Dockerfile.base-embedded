@@ -1,0 +1,61 @@
+# ============================================
+# 公共基础镜像 — 所有嵌入式项目的共同依赖
+# 构建: docker build -f Dockerfile.base-embedded -t openedge/base-embedded:latest .
+# ============================================
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV LANG=C.UTF-8
+ENV TZ=Asia/Shanghai
+
+# ---- 编译工具链 ----
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    cmake \
+    ninja-build \
+    gcc-multilib \
+    g++-multilib \
+    device-tree-compiler \
+    pkg-config \
+    libtool \
+    autoconf \
+    automake \
+    # ---- 版本控制 & 网络 ----
+    git \
+    git-lfs \
+    curl \
+    wget \
+    ca-certificates \
+    # ---- Python 生态 ----
+    python3 \
+    python3-pip \
+    python3-venv \
+    python3-dev \
+    # ---- 日常工具 ----
+    vim \
+    nano \
+    zip \
+    unzip \
+    jq \
+    xxd \
+    file \
+    # ---- USB / 串口 ----
+    libusb-1.0-0-dev \
+    libudev-dev \
+    usbutils \
+    # ---- 清理 ----
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# 统一 python → python3
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1 \
+    && python -m pip install --upgrade pip setuptools wheel
+
+# ---- 非 root 用户 (匹配 VSCode Dev Container 约定) ----
+RUN useradd --create-home --shell /bin/bash --groups sudo,plugdev vscode \
+    && echo "vscode ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+USER vscode
+WORKDIR /workspace
+
+CMD ["/bin/bash"]

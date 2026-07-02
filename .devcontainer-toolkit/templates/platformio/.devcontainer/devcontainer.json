@@ -1,0 +1,27 @@
+{
+  "name": "PlatformIO Project",
+  "image": "openedge/platformio:latest",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "platformio.platformio-ide",
+        "ms-vscode.cpptools",
+        "ms-python.python"
+      ]
+    }
+  },
+
+  "mounts": [
+    "source=platformio-cache,target=/home/vscode/.platformio,type=volume",
+    "source=${localEnv:USERPROFILE}/.ssh,target=/home/vscode/.ssh,type=bind,readonly"
+  ],
+
+  "runArgs": [
+    "--privileged"
+  ],
+
+  "workspaceFolder": "/workspace",
+
+  "postCreateCommand": "pio --version && echo '✅ PlatformIO 就绪'"
+}

@@ -1,0 +1,36 @@
+# ============================================
+# ARM Cortex-M 镜像 — CMSIS / ExecuTorch / 裸机嵌入式
+# 构建: docker build -f Dockerfile.arm-cortex-m -t openedge/arm-cortex-m:latest .
+# ============================================
+FROM openedge/base-embedded:latest
+
+USER root
+
+ENV ARM_GCC_VERSION=13.2.rel1
+ENV ARM_GCC_DIR=/opt/arm-gcc-toolchain
+ENV PATH="${ARM_GCC_DIR}/bin:${PATH}"
+
+# ---- ARM GNU Toolchain ----
+RUN mkdir -p /opt/arm-gcc-toolchain \
+    && curl -L "https://developer.arm.com/-/media/Files/downloads/gnu/${ARM_GCC_VERSION}/binrel/arm-gnu-toolchain-${ARM_GCC_VERSION}-x86_64-arm-none-eabi.tar.xz" \
+       -o /tmp/arm-gcc.tar.xz \
+    && tar -xf /tmp/arm-gcc.tar.xz -C /opt/arm-gcc-toolchain --strip-components=1 \
+    && rm /tmp/arm-gcc.tar.xz
+
+# ---- 调试工具 ----
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    openocd \
+    gdb-multiarch \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# ---- CMSIS / ExecuTorch Python 依赖 ----
+RUN python -m pip install --no-cache-dir \
+    numpy \
+    pillow \
+    pyelftools \
+    cbor
+
+USER vscode
+WORKDIR /workspace
+CMD ["/bin/bash"]

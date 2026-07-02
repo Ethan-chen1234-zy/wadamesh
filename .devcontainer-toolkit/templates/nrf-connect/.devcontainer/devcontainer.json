@@ -1,0 +1,35 @@
+{
+  "name": "nRF Connect SDK Dev",
+  "image": "openedge/nrf-connect:latest",
+
+  "remoteEnv": {
+    "ZEPHYR_BASE": "/opt/nordic/ncs/zephyr",
+    "PATH": "/opt/nordic/ncs/zephyr/scripts:${containerEnv:PATH}"
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "nordic-semiconductor.nrf-connect",
+        "nordic-semiconductor.nrf-devicetree",
+        "nordic-semiconductor.nrf-terminal",
+        "nordic-semiconductor.nrf-kconfig",
+        "ms-vscode.cpptools",
+        "ms-vscode.cmake-tools",
+        "ms-python.python"
+      ]
+    }
+  },
+
+  "mounts": [
+    "source=${localEnv:USERPROFILE}/.ssh,target=/home/vscode/.ssh,type=bind,readonly"
+  ],
+
+  "runArgs": [
+    "--privileged"
+  ],
+
+  "workspaceFolder": "/workspace",
+
+  "postCreateCommand": "nrfutil version && west --version && echo '✅ nRF Connect 就绪'"
+}
